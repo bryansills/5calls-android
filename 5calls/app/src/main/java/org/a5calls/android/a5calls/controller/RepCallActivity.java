@@ -12,6 +12,8 @@ import android.support.v4.graphics.drawable.RoundedBitmapDrawable;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.GridLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.text.util.Linkify;
 import android.util.Log;
@@ -27,6 +29,7 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.target.BitmapImageViewTarget;
@@ -43,6 +46,7 @@ import org.a5calls.android.a5calls.model.Issue;
 import org.a5calls.android.a5calls.view.OutcomeView;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import butterknife.BindView;
@@ -69,7 +73,6 @@ public class RepCallActivity extends AppCompatActivity {
     private Tracker mTracker = null;
 
     @BindView(R.id.scroll_view) ScrollView scrollView;
-    @BindView(R.id.rep_call_root) LinearLayout linearLayout;
 
     @BindView(R.id.rep_info) RelativeLayout repInfoLayout;
     @BindView(R.id.rep_image) ImageView repImage;
@@ -79,6 +82,7 @@ public class RepCallActivity extends AppCompatActivity {
     @BindView(R.id.contact_done_img) ImageButton contactChecked;
 
     @BindView(R.id.buttons_prompt) TextView buttonsPrompt;
+    @BindView(R.id.outcome_list) RecyclerView outcomeList;
 
     @BindView(R.id.local_office_btn) Button localOfficeButton;
     @BindView(R.id.field_office_section) LinearLayout localOfficeSection;
@@ -148,15 +152,15 @@ public class RepCallActivity extends AppCompatActivity {
         }
         setupContactUi(mActiveContactIndex, expandLocalOffices);
 
-        outcomeView = new OutcomeView(this, mIssue.outcomes, new OutcomeView.Callback() {
-            @Override
-            public void onOutcomeClick(String outcome) {
-                reportEvent(outcome);
-                reportCall(outcome, address);
-            }
-        });
-
-        linearLayout.addView(outcomeView);
+//        outcomeView = new OutcomeView(this, mIssue.outcomes, new OutcomeView.Callback() {
+//            @Override
+//            public void onOutcomeClick(String outcome) {
+//                reportEvent(outcome);
+//                reportCall(outcome, address);
+//            }
+//        });
+        outcomeList.setLayoutManager(new GridLayoutManager(this, 2));
+        outcomeList.setAdapter(new OutcomeAdapter(new ArrayList<String>()));
 
         // We allow Analytics opt-out.
         if (accountManager.allowAnalytics(this)) {
@@ -347,5 +351,48 @@ public class RepCallActivity extends AppCompatActivity {
         Intent upIntent = NavUtils.getParentActivityIntent(this);
         upIntent.putExtra(IssueActivity.KEY_ISSUE, mIssue);
         NavUtils.navigateUpTo(this, upIntent);
+    }
+
+    private static class OutcomeAdapter extends RecyclerView.Adapter<OutcomeAdapter.ViewHolder> {
+
+        List<String> temp;
+
+        public OutcomeAdapter(List<String> temp) {
+            this.temp = new ArrayList<>(Arrays.asList("BLARG", "NOT BLARG", "BLAH", "YO YO YO", "WHADDUP"));
+        }
+
+        @Override
+        public OutcomeAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+            return new ViewHolder(LayoutInflater.from(parent.getContext()).inflate(android.R.layout.simple_list_item_1, parent, false));
+        }
+
+        @Override
+        public void onBindViewHolder(OutcomeAdapter.ViewHolder holder, int position) {
+            ViewHolder.bind(holder, temp.get(position));
+        }
+
+        @Override
+        public int getItemCount() {
+            return temp.size();
+        }
+
+        private static class ViewHolder extends RecyclerView.ViewHolder {
+            TextView textView;
+
+            public ViewHolder(View itemView) {
+                super(itemView);
+                textView = (TextView) itemView.findViewById(android.R.id.text1);
+            }
+
+            public static void bind(ViewHolder holder, String stuff) {
+                holder.textView.setText(stuff);
+                holder.itemView.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        Toast.makeText(v.getContext(), "BLARGGGGGGGGG", Toast.LENGTH_SHORT).show();
+                    }
+                });
+            }
+        }
     }
 }
